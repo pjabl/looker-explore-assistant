@@ -78,7 +78,7 @@ const Message = ({ message, actor, children }: MessageProps) => (
       actor === 'user' ? 'justify-end' : 'justify-start'
     } mb-4`}
   >
-    <div className={`max-w-[70%] ${actor === 'user' ? 'order-2' : 'order-1'}`}>
+    <div className={`max-w-[70%] relative ${actor === 'user' ? 'order-2' : 'order-1'}`}>
       <div
         className={clsx(
           'rounded-lg p-3 max-w-xl',
