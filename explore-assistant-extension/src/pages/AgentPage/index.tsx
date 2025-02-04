@@ -18,6 +18,7 @@ import {
   setIsQuerying,
   setQuery,
   setSidePanelExploreUrl,
+  setSnackbar,
   updateCurrentThread,
   updateLastHistoryEntry,
 } from '../../slices/assistantSlice'
@@ -25,12 +26,14 @@ import MessageThread from './MessageThread'
 import clsx from 'clsx'
 import { Close } from '@material-ui/icons'
 import {
+  Alert,
   FormControl,
   InputLabel,
   LinearProgress,
   MenuItem,
   Select,
   SelectChangeEvent,
+  Snackbar,
   Tooltip,
 } from '@mui/material'
 import { getRelativeTimeString } from '../../utils/time'
@@ -65,6 +68,7 @@ const AgentPage = () => {
     semanticModels,
     isBigQueryMetadataLoaded,
     isSemanticModelLoaded,
+    snackbar,
   } = useSelector((state: RootState) => state.assistant as AssistantState)
 
   const explores = Object.keys(examples.exploreSamples).map((key) => {
@@ -95,7 +99,8 @@ const AgentPage = () => {
       }),
     )
 
-    const exploreKey = currentExploreThread?.exploreKey || currentExplore.exploreKey
+    const exploreKey =
+      currentExploreThread?.exploreKey || currentExplore.exploreKey
 
     // set the explore if it is not set
     if (!currentExploreThread?.modelName || !currentExploreThread?.exploreId) {
@@ -422,6 +427,15 @@ const AgentPage = () => {
             </>
           )}
         </div>
+        <Snackbar
+          open={!!snackbar}
+          onClose={() => dispatch(setSnackbar(null))}
+          autoHideDuration={5000}
+        >
+          <Alert severity={snackbar?.type} variant="filled">
+            {snackbar?.message}
+          </Alert>
+        </Snackbar>
         <div ref={endOfMessagesRef} /> {/* Ref for the last message */}
       </main>
     </div>
