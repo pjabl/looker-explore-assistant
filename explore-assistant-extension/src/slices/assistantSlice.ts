@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { v4 as uuidv4 } from 'uuid'
+import { IUser } from "@looker/sdk";
+import { AlertProps } from "@mui/material";
 
 export interface Setting {
   name: string
@@ -94,6 +96,8 @@ export interface SemanticModel {
 export interface AssistantState {
   isQuerying: boolean
   isChatMode: boolean
+  isDevMode: boolean
+  currentUser: IUser | null,
   currentExploreThread: ExploreThread | null
   currentExplore: {
     exploreKey: string
@@ -116,11 +120,15 @@ export interface AssistantState {
   },
   settings: Settings,
   isBigQueryMetadataLoaded: boolean,
-  isSemanticModelLoaded: boolean
+  isSemanticModelLoaded: boolean,
+  snackbar: {
+    type: AlertProps['severity'],
+    message: string
+  } | null
 }
 
 export const newThreadState = () => {
-  const thread: ExploreThread = {    
+  const thread: ExploreThread = {
     uuid: uuidv4(),
     exploreKey: '',
     exploreId: '',
@@ -137,6 +145,8 @@ export const newThreadState = () => {
 export const initialState: AssistantState = {
   isQuerying: false,
   isChatMode: false,
+  isDevMode: false,
+  currentUser: null,
   currentExploreThread: null,
   currentExplore: {
     exploreKey: '',
@@ -163,7 +173,8 @@ export const initialState: AssistantState = {
     },
   },
   isBigQueryMetadataLoaded: false,
-  isSemanticModelLoaded: false
+  isSemanticModelLoaded: false,
+  snackbar: null
 }
 
 export const assistantSlice = createSlice({
@@ -187,8 +198,8 @@ export const assistantSlice = createSlice({
       state.settings = initialState.settings
     },
     setSetting: (
-      state,
-      action: PayloadAction<{ id: keyof Settings; value: boolean }>,
+        state,
+        action: PayloadAction<{ id: keyof Settings; value: boolean }>,
     ) => {
       const { id, value } = action.payload
       if (state.settings[id]) {
@@ -234,8 +245,8 @@ export const assistantSlice = createSlice({
       state.currentExploreThread.exploreUrl = action.payload
     },
     updateCurrentThread: (
-      state,
-      action: PayloadAction<Partial<ExploreThread>>,
+        state,
+        action: PayloadAction<Partial<ExploreThread>>,
     ) => {
       if (state.currentExploreThread === null) {
         state.currentExploreThread = newThreadState()
@@ -269,39 +280,39 @@ export const assistantSlice = createSlice({
       state.currentExploreThread.messages.push(action.payload)
     },
     setExploreGenerationExamples(
-      state,
-      action: PayloadAction<AssistantState['examples']['exploreGenerationExamples']>,
+        state,
+        action: PayloadAction<AssistantState['examples']['exploreGenerationExamples']>,
     ) {
       state.examples.exploreGenerationExamples = action.payload
     },
     setExploreRefinementExamples(
-      state,
-      action: PayloadAction<AssistantState['examples']['exploreRefinementExamples']>,
+        state,
+        action: PayloadAction<AssistantState['examples']['exploreRefinementExamples']>,
     ) {
       state.examples.exploreRefinementExamples = action.payload
     },
     updateSummaryMessage: (
-      state,
-      action: PayloadAction<{ uuid: string; summary: string }>,
+        state,
+        action: PayloadAction<{ uuid: string; summary: string }>,
     ) => {
       const { uuid, summary } = action.payload
       if (state.currentExploreThread === null) {
         state.currentExploreThread = newThreadState()
       }
       const message = state.currentExploreThread.messages.find(
-        (message) => message.uuid === uuid,
+          (message) => message.uuid === uuid,
       ) as SummarizeMesage
       message.summary = summary
     },
     setExploreSamples(
-      state,
-      action: PayloadAction<ExploreSamples>,
+        state,
+        action: PayloadAction<ExploreSamples>,
     ) {
       state.examples.exploreSamples = action.payload
     },
     setisBigQueryMetadataLoaded: (
-      state, 
-      action: PayloadAction<boolean>
+        state,
+        action: PayloadAction<boolean>
     ) => {
       state.isBigQueryMetadataLoaded = action.payload
     },
@@ -310,6 +321,15 @@ export const assistantSlice = createSlice({
     },
     setCurrenExplore: (state, action: PayloadAction<AssistantState['currentExplore']>) => {
       state.currentExplore = action.payload
+    },
+    setCurrentUser: (state, action: PayloadAction<AssistantState['currentUser']>) => {
+      state.currentUser = action.payload
+    },
+    setIsDevMode: (state, action: PayloadAction<AssistantState['isDevMode']>) => {
+      state.isDevMode = action.payload
+    },
+    setSnackbar: (state, action: PayloadAction<AssistantState['snackbar']>) => {
+      state.snackbar = action.payload
     }
   },
 })
@@ -347,6 +367,9 @@ export const {
   updateSummaryMessage,
 
   setCurrenExplore,
+  setCurrentUser,
+  setIsDevMode,
+  setSnackbar,
 
   resetExploreAssistant,
 } = assistantSlice.actions
